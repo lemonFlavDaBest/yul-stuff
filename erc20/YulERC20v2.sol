@@ -41,4 +41,11 @@ contract YulERC20v2 {
             return(memptr, 0x60)
         }
     }
+
+    function decimals() public pure returns (uint8) {
+        assembly{
+            mstore(0, 18)
+            return (0x00, 0x20)
+        }
+    }
 }

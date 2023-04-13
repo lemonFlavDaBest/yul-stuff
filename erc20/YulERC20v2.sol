@@ -22,6 +22,9 @@ error InsufficientAllowance(address owner, address spender);
 /// @author <your name here>
 /// @notice For demo purposes ONLY.
 contract YulERC20v2 {
+
+    mapping (address => uint256) internal _balances;
+    mapping (address => mapping(address => uint256)) internal _allowances;
     function name() public pure returns (string memory){
         assembly{
             let memptr := mload(0x40)
@@ -46,6 +49,12 @@ contract YulERC20v2 {
         assembly{
             mstore(0, 18)
             return (0x00, 0x20)
+        }
+    }
+
+    function balanceOf(address) public view returns (uint256) {
+        assembly {
+            
         }
     }
 }

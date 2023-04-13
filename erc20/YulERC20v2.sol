@@ -22,5 +22,13 @@ error InsufficientAllowance(address owner, address spender);
 /// @author <your name here>
 /// @notice For demo purposes ONLY.
 contract YulERC20v2 {
-
+    function name() public pure returns (string memory){
+        assembly{
+            let memptr := mload(0x40)
+            mstore(memptr, 0x20)
+            mstore(add(memptr,0x20), nameLength)
+            mstore(add(memptr,0x40), nameData)
+            return (memptr, 0x60)
+        }
+    }
 }

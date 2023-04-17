@@ -52,9 +52,32 @@ contract YulERC20v2 {
         }
     }
 
+    // this is the un optimized version. slower but easier to read
+    /*
     function balanceOf(address) public view returns (uint256) {
         assembly {
-            
+            //first 4bytes of calldata are funcsig
+            // the next bytes are the function arg. so we have an index of 4
+            let account := calldataload(4)
+
+            mstore(0x00, account)
+            mstore(0x20, 0x00)
+
+            let hash := keccak256(0x0, 0x40)
+            let accountBalance := sload(hash)
+
+            mstore(0x00, accountBalance)
+            return (0x00, 0x20)
         }
     }
+    */
+
+   function balanceOf(address) public view returns (uint256) {
+        assembly {
+            mstore(0x00, calldataload(4))
+            mstore(0x20, 0x00)
+            mstore(0x00, sload(keccak256(0x00, 0x40)))
+            return (0x00, 0x20)
+        }
+   }
 }

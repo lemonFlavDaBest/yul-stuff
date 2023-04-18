@@ -88,15 +88,29 @@ contract YulERC20v2 {
             let memptr := mload(0x40)
             mstore(memptr, caller())
             mstore(add(memptr, 0x20), 0x00)
-            let callerBalance := sload(keccak256(memptr, 0x40))
+            //i might need a refresher on why the 0x40 on the next line
+            let callerBalanceSlot := keccak256(memptr, 0x40)
+            let callerBalance := sload(callerBalanceSlot)
 
             if lt(callerBalance, value) {
                 mstore(0x00, insufficientBalanceSelector)
                 revert(0x00, 0x04)
             }
 
-            let newCallerBalance := add(callerBalance, value)
+            let newCallerBalance := sub(callerBalance, value)
+            //again, we can overwrite these slots because we will not need the old ones
+            mstore(memptr, receiver)
+            mstore(add(memptr, 0x20), 0x00)
+
+            let receiverBalanceSlot := keccak256(memptr,0x40)
+            let receiverBalance := sload(receiverBalanceSlot)
             
+            let newReceiverBalance := add(receiverBalance, value)
+            sstore(callerBalanceSlot, newCallerBalance)
+            sstore(receiverBalanceSlot, newReceiverBalance)
+
+            mstore(0x00, 0x01)
+            return(0x00, 0x20)
         }
    }
 }

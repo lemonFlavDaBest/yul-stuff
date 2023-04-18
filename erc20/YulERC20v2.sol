@@ -19,8 +19,10 @@ error InsufficientBalance();
 error InsufficientAllowance(address owner, address spender);
 
 /// @title Yul ERC20
-/// @author <your name here>
+/// @author lemonflavdabest
 /// @notice For demo purposes ONLY.
+
+//mstore() first value is the slot, and the second value is what you want to store there
 contract YulERC20v2 {
 
     mapping (address => uint256) internal _balances;

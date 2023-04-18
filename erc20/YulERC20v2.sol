@@ -28,7 +28,11 @@ contract YulERC20v2 {
 
     event Transfer(address indexed sender, address indexed receiver, uint256 amount);
 
+    // owner --> balance
     mapping (address => uint256) internal _balances;
+
+    // owner -- > spender --> amount allowed
+    //keccak256(spender, keccak256(owner, slot))
     mapping (address => mapping(address => uint256)) internal _allowances;
     function name() public pure returns (string memory){
         assembly{
@@ -128,5 +132,27 @@ contract YulERC20v2 {
             mstore(0x00, 0x01)
             return(0x00, 0x20)
         }
+   }
+
+   function allowance (address owner, address spender) public view returns (uint256) {
+        assembly {
+            mstore(0x00, caller())
+            mstore(0x20, 0x01)
+            let innerHash := keccak256(0x00, 0x40)
+
+            mstore(0x00, spender)
+            mstore(0x20, innerHash)
+            let allowanceSlot := keccak256(0x00, 0x40)
+
+            let allowanceValue := sload(allowanceSlot)
+
+            mstore(0x00, allowanceValue)
+
+            return (0x00, 0x20)
+        }
+   }
+
+   function approve (address spender, uint256 amount) public returns (bool) {
+        
    }
 }

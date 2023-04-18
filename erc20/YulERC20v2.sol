@@ -14,6 +14,7 @@ bytes32 constant insufficientBalanceSelector = 0xf4d678b800000000000000000000000
 
 // `bytes4(keccak256("InsufficientAllowance(address,address)"))`
 bytes32 constant insufficientAllowanceSelector = 0xf180d8f900000000000000000000000000000000000000000000000000000000;
+bytes32 constant transferHash = 0xa9059cbb2ab09eb219583f4a59a5d0623ade346d962bcd4e46b11da047c9049b;
 
 error InsufficientBalance();
 error InsufficientAllowance(address owner, address spender);
@@ -24,6 +25,8 @@ error InsufficientAllowance(address owner, address spender);
 
 //mstore() first value is the slot, and the second value is what you want to store there
 contract YulERC20v2 {
+
+    event Transfer(address indexed sender, address indexed receiver, uint256 amount);
 
     mapping (address => uint256) internal _balances;
     mapping (address => mapping(address => uint256)) internal _allowances;
@@ -98,6 +101,12 @@ contract YulERC20v2 {
                 revert(0x00, 0x04)
             }
 
+    /* this was a late catch, so this is not actually the correct way to implement
+            if eq(caller(), receiver) {
+                revert(0x00, 0x00)
+            }
+    */
+
             let newCallerBalance := sub(callerBalance, value)
             //again, we can overwrite these slots because we will not need the old ones
             mstore(memptr, receiver)
@@ -107,8 +116,14 @@ contract YulERC20v2 {
             let receiverBalance := sload(receiverBalanceSlot)
             
             let newReceiverBalance := add(receiverBalance, value)
+
+            //storage
             sstore(callerBalanceSlot, newCallerBalance)
             sstore(receiverBalanceSlot, newReceiverBalance)
+
+            //logging for events
+            mstore(0x00, value)
+            log3(0x00, 0x20, transferHash, caller(), receiver)
 
             mstore(0x00, 0x01)
             return(0x00, 0x20)

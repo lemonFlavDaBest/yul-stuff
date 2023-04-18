@@ -83,6 +83,7 @@ contract YulERC20v2 {
         }
    }
 
+    //this transfer function is unoptimized
    function transfer(address receiver, uint256 value) public returns (bool) {
         assembly{
             let memptr := mload(0x40)

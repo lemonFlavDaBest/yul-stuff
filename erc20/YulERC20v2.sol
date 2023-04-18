@@ -82,4 +82,21 @@ contract YulERC20v2 {
             return (0x00, 0x20)
         }
    }
+
+   function transfer(address receiver, uint256 value) public returns (bool) {
+        assembly{
+            let memptr := mload(0x40)
+            mstore(memptr, caller())
+            mstore(add(memptr, 0x20), 0x00)
+            let callerBalance := sload(keccak256(memptr, 0x40))
+
+            if lt(callerBalance, value) {
+                mstore(0x00, insufficientBalanceSelector)
+                revert(0x00, 0x04)
+            }
+
+            let newCallerBalance := add(callerBalance, value)
+            
+        }
+   }
 }

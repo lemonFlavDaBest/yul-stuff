@@ -15,6 +15,7 @@ bytes32 constant insufficientBalanceSelector = 0xf4d678b800000000000000000000000
 // `bytes4(keccak256("InsufficientAllowance(address,address)"))`
 bytes32 constant insufficientAllowanceSelector = 0xf180d8f900000000000000000000000000000000000000000000000000000000;
 bytes32 constant transferHash = 0xa9059cbb2ab09eb219583f4a59a5d0623ade346d962bcd4e46b11da047c9049b;
+bytes32 constant approveHash = 0x095ea7b334ae44009aa867bfb386f5c3b4b443ac6f0ee573fa91c4608fbadfba;
 
 error InsufficientBalance();
 error InsufficientAllowance(address owner, address spender);
@@ -27,6 +28,7 @@ error InsufficientAllowance(address owner, address spender);
 contract YulERC20v2 {
 
     event Transfer(address indexed sender, address indexed receiver, uint256 amount);
+    event Approval(address indexed owner, address indexed spender, uint256 amount);
 
     // owner --> balance
     mapping (address => uint256) internal _balances;
@@ -153,6 +155,22 @@ contract YulERC20v2 {
    }
 
    function approve (address spender, uint256 amount) public returns (bool) {
-        
+        assembly {
+            mstore(0x00, caller())
+            mstore(0x20, 0x01)
+            let innerHash := keccak256(0x00, 0x40)
+
+            mstore(0x00, spender)
+            mstore(0x20, innerHash)
+            let allowanceSlot := keccak256(0x00, 0x40)
+
+            sstore(allowanceSlot, amount)
+
+            mstore(0x00, amount)
+            log3(0x00, 0x20, approveHash, caller(), spender)
+            mstore(0x00, 0x01)
+            return (0x00, 0x20)
+
+        }
    }
 }

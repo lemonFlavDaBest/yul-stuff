@@ -36,6 +36,23 @@ contract YulERC20v2 {
     // owner -- > spender --> amount allowed
     //keccak256(spender, keccak256(owner, slot))
     mapping (address => mapping(address => uint256)) internal _allowances;
+
+    uint256 internal _totalSupply;
+
+    constructor() {
+        assembly {
+            mstore(0x00, caller())
+            mstore(0x20, 0x00)
+            let slot := keccak256(0x00, 0x40)
+            sstore(0x00, maxUint256)
+
+            sstore(0x02, maxUint256)
+
+            mstore(0x00, maxUint256)
+            log3(0x00, 0x20, transferHash, 0x00, caller())
+        }
+    }
+
     function name() public pure returns (string memory){
         assembly{
             let memptr := mload(0x40)
@@ -74,7 +91,7 @@ contract YulERC20v2 {
             mstore(0x00, account)
             mstore(0x20, 0x00)
 
-            let hash := keccak256(0x0, 0x40)
+            let hash := keccak256(0x00, 0x40)
             let accountBalance := sload(hash)
 
             mstore(0x00, accountBalance)
@@ -82,6 +99,13 @@ contract YulERC20v2 {
         }
     }
     */
+
+   function totalSupply() public view returns (uint256) {
+        assembly {
+            mstore(0x00, sload(0x02))
+            return(0x00, 0x20)
+        }
+   }
 
    function balanceOf(address) public view returns (uint256) {
         assembly {
@@ -118,7 +142,7 @@ contract YulERC20v2 {
             mstore(memptr, receiver)
             mstore(add(memptr, 0x20), 0x00)
 
-            let receiverBalanceSlot := keccak256(memptr,0x40)
+            let receiverBalanceSlot := keccak256(memptr, 0x40)
             let receiverBalance := sload(receiverBalanceSlot)
             
             let newReceiverBalance := add(receiverBalance, value)
